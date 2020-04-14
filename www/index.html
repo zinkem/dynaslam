@@ -1,0 +1,122 @@
+<html>
+  <head>
+  <script src="https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js"></script>
+  <script src="https://pagecdn.io/lib/ace/1.4.8/ace.js"></script>
+  </head>
+  <style>
+    .row {
+      width: 600px;
+      display: flex;
+      flex-direction: row;
+    }
+    .row > div {
+      display: flex;
+    }
+    [data-schemapath='root.description'] {
+      width: 600px;
+    }
+
+    .form-control {
+      width: 600px;
+    }
+  </style>
+  <body>
+    <script type="text/javascript">
+      let formElement = document.createElement('div');
+      let schema = {
+        type: "object",
+        definitions: {
+          Application: {
+            type: "object",
+            id: "Application",
+            title: "Application",
+            properties: {
+              "ip" : {
+                type: "string",
+                format: "ipv4"
+              },
+              "port" : {
+                type: "integer",
+                minimumValue: 0,
+                maximumValue: 65535
+              }
+            },
+            required: [ "ip", "port" ],
+            additionalProperties: false
+          },
+          Source: {
+            type: "string",
+            id: "Source",
+            enum: [
+            "http", "tcp"
+            ]
+          }
+        },
+        additionalProperties: {
+          oneOf : [
+            { $ref : "#/definitions/Application" },
+            { $ref : "#/definitions/Source"}
+            ]
+        }
+      };
+
+
+      schema = {
+        definitions: {
+          ticket: {
+            type: "object",
+            properties: {
+              title: {
+                type: "string"
+              },
+              description: {
+                type: "string",
+                format: "yaml"
+              },
+              product: {
+                type: "string",
+                enum: [ "BeefArena", "Buckets"],
+                default: "BeefArena"
+              }
+            }
+          },
+          artifact: {
+            type: 'string',
+            format: 'textarea'
+          },
+          bug: {
+            title: "Bug",
+            description: "Report a defect",
+            allOf: [{ $ref: '#/definitions/ticket' }],
+            properties: {
+              artifacts: {
+                type: "array",
+                items: { $ref: '#/definitions/artifact' }
+              }
+            },
+            required: [ "artifacts" ]
+          },
+          feature: {
+            title: "Feature",
+            allOf: [{ $ref: '#/definitions/ticket' }],
+            additionalProperties: false
+          }
+        },
+        oneOf: [
+          { $ref: '#/definitions/bug' },
+          { $ref: '#/definitions/feature' }
+        ]
+      }
+
+      let editor = new JSONEditor(formElement, {
+                schema,
+                disable_edit_json: true,
+                disable_collapse: true,
+                disable_properties: true,
+                theme: "barebones",
+                object_layout: "table"
+            });
+        document.body.appendChild(formElement);
+      </script>
+  </body>
+</html>
